@@ -1,0 +1,15 @@
+{
+  "name": "mind-meld",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A word association game where you try to reach the same word as AI players",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2"
+  }
+}

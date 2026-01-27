@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mind Meld</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #e94560, #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 30px;
+    }
+
+    .game-container {
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .setup-panel {
+      background: rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+
+    .setup-panel h2 {
+      margin-bottom: 20px;
+      color: #e94560;
+    }
+
+    .ai-count-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .ai-count-btn {
+      padding: 15px 25px;
+      border: 2px solid #e94560;
+      background: transparent;
+      color: #fff;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    .ai-count-btn:hover, .ai-count-btn.selected {
+      background: #e94560;
+    }
+
+    .start-btn {
+      width: 100%;
+      padding: 20px;
+      background: linear-gradient(90deg, #e94560, #ff6b6b);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+    }
+
+    .game-panel {
+      display: none;
+      background: rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+
+    .countdown {
+      font-size: 8rem;
+      text-align: center;
+      font-weight: bold;
+      color: #e94560;
+      text-shadow: 0 0 50px rgba(233, 69, 96, 0.5);
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .round-info {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      color: #888;
+    }
+
+    .players-area {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .player-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .player-card.human {
+      border-color: #4ecdc4;
+    }
+
+    .player-card.ai {
+      border-color: #e94560;
+    }
+
+    .player-card.matched {
+      border-color: #00ff00;
+      box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+    }
+
+    .player-name {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+
+    .player-card.human .player-name { color: #4ecdc4; }
+    .player-card.ai .player-name { color: #e94560; }
+
+    .player-word {
+      font-size: 1.8rem;
+      font-weight: bold;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .word-input {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.3rem;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      text-align: center;
+    }
+
+    .word-input:focus {
+      outline: 2px solid #4ecdc4;
+    }
+
+    .word-input:disabled {
+      opacity: 0.5;
+    }
+
+    .hidden-word {
+      color: #666;
+      font-style: italic;
+    }
+
+    .action-area {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .submit-btn, .next-btn {
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .submit-btn {
+      background: linear-gradient(90deg, #4ecdc4, #44a08d);
+      color: #fff;
+    }
+
+    .next-btn {
+      background: linear-gradient(90deg, #e94560, #ff6b6b);
+      color: #fff;
+    }
+
+    .submit-btn:hover, .next-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .history-panel {
+      background: rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .history-panel h3 {
+      color: #e94560;
+      margin-bottom: 15px;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .history-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .history-round {
+      background: #e94560;
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .history-words {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .history-word {
+      background: rgba(255,255,255,0.1);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+    }
+
+    .history-word.human { border: 1px solid #4ecdc4; }
+    .history-word.ai { border: 1px solid #e94560; }
+    .history-word.match {
+      background: rgba(0, 255, 0, 0.2);
+      border: 1px solid #00ff00;
+    }
+
+    .arrow {
+      color: #666;
+    }
+
+    /* Celebration */
+    .celebration {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .celebration.active {
+      display: flex;
+    }
+
+    .celebration h2 {
+      font-size: 4rem;
+      color: #00ff00;
+      text-shadow: 0 0 50px rgba(0, 255, 0, 0.5);
+      margin-bottom: 20px;
+      animation: celebratePulse 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes celebratePulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+
+    .matched-word-display {
+      font-size: 3rem;
+      color: #fff;
+      margin-bottom: 30px;
+    }
+
+    .song-lyrics {
+      font-size: 1.5rem;
+      color: #e94560;
+      text-align: center;
+      line-height: 2;
+      animation: bounce 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    .play-again-btn {
+      margin-top: 40px;
+      padding: 20px 50px;
+      font-size: 1.3rem;
+      background: linear-gradient(90deg, #e94560, #ff6b6b);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(720deg);
+      }
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .instruction {
+      text-align: center;
+      color: #888;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+    }
+
+    .word-input.error {
+      animation: shake 0.3s;
+      border: 2px solid #ff6b6b !important;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Mind Meld</h1>
+  <p class="subtitle">Find the connection. Say the same word.</p>
+
+  <div class="game-container">
+    <!-- Setup Panel -->
+    <div class="setup-panel" id="setupPanel">
+      <h2>How many AI players?</h2>
+      <div class="ai-count-selector">
+        <button class="ai-count-btn selected" data-count="1">1 AI</button>
+        <button class="ai-count-btn" data-count="2">2 AIs</button>
+        <button class="ai-count-btn" data-count="3">3 AIs</button>
+      </div>
+      <button class="start-btn" id="startBtn">Start Mind Meld</button>
+    </div>
+
+    <!-- Game Panel -->
+    <div class="game-panel" id="gamePanel">
+      <div class="round-info">Round <span id="roundNum">1</span></div>
+
+      <div id="countdown" class="countdown" style="display: none;"></div>
+
+      <p class="instruction" id="instruction">Think of any word to start!</p>
+
+      <div class="players-area" id="playersArea"></div>
+
+      <div class="action-area">
+        <button class="submit-btn" id="submitBtn">Lock In My Word</button>
+        <button class="next-btn" id="nextBtn" style="display: none;">Next Round</button>
+      </div>
+    </div>
+
+    <!-- History Panel -->
+    <div class="history-panel" id="historyPanel" style="display: none;">
+      <h3>Word Chain</h3>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- Celebration Overlay -->
+  <div class="celebration" id="celebration">
+    <h2>MIND MELD!</h2>
+    <div class="matched-word-display" id="matchedWordDisplay"></div>
+    <div class="song-lyrics">
+      🎵 It was a mind meld, it was a mind meld 🎵<br>
+      🎵 It happens all the time 🎵<br>
+      🎵 It was a mind meld! 🎵
+    </div>
+    <button class="play-again-btn" id="playAgainBtn">Play Again</button>
+  </div>
+
+  <script>
+    // Game State
+    let aiCount = 1;
+    let round = 1;
+    let history = [];
+    let usedWords = new Set();
+    let gamePhase = 'input'; // 'input', 'countdown', 'reveal', 'done'
+    let playerWord = '';
+    let aiWords = [];
+    let previousWords = { human: null, ais: [] };
+
+    // DOM Elements
+    const setupPanel = document.getElementById('setupPanel');
+    const gamePanel = document.getElementById('gamePanel');
+    const historyPanel = document.getElementById('historyPanel');
+    const playersArea = document.getElementById('playersArea');
+    const submitBtn = document.getElementById('submitBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const roundNum = document.getElementById('roundNum');
+    const countdown = document.getElementById('countdown');
+    const instruction = document.getElementById('instruction');
+    const celebration = document.getElementById('celebration');
+    const matchedWordDisplay = document.getElementById('matchedWordDisplay');
+
+    // Setup AI count selection
+    document.querySelectorAll('.ai-count-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ai-count-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        aiCount = parseInt(btn.dataset.count);
+      });
+    });
+
+    // Start game
+    document.getElementById('startBtn').addEventListener('click', startGame);
+    document.getElementById('playAgainBtn').addEventListener('click', () => {
+      celebration.classList.remove('active');
+      resetGame();
+    });
+
+    function startGame() {
+      setupPanel.style.display = 'none';
+      gamePanel.style.display = 'block';
+      resetGame();
+    }
+
+    function resetGame() {
+      round = 1;
+      history = [];
+      usedWords = new Set();
+      previousWords = { human: null, ais: [] };
+      gamePhase = 'input';
+      roundNum.textContent = round;
+      historyPanel.style.display = 'none';
+      document.getElementById('historyList').innerHTML = '';
+      setupRound();
+    }
+
+    function isWordUsed(word) {
+      return usedWords.has(word.toLowerCase().trim());
+    }
+
+    function addUsedWord(word) {
+      if (word) usedWords.add(word.toLowerCase().trim());
+    }
+
+    function setupRound() {
+      playersArea.innerHTML = '';
+      playerWord = '';
+      aiWords = [];
+      gamePhase = 'input';
+
+      // Create human player card
+      const humanCard = document.createElement('div');
+      humanCard.className = 'player-card human';
+      humanCard.innerHTML = `
+        <div class="player-name">You</div>
+        <div class="player-word">
+          <input type="text" class="word-input" id="humanInput"
+                 placeholder="Your word..." maxlength="50" autocomplete="off">
+        </div>
+      `;
+      playersArea.appendChild(humanCard);
+
+      // Create AI player cards
+      for (let i = 0; i < aiCount; i++) {
+        const aiCard = document.createElement('div');
+        aiCard.className = 'player-card ai';
+        aiCard.id = `ai-${i}`;
+        aiCard.innerHTML = `
+          <div class="player-name">AI ${aiCount > 1 ? i + 1 : 'Player'}</div>
+          <div class="player-word">
+            <span class="hidden-word">Thinking...</span>
+          </div>
+        `;
+        playersArea.appendChild(aiCard);
+      }
+
+      // Update instruction
+      if (round === 1) {
+        instruction.textContent = "Think of any word to start!";
+      } else {
+        instruction.textContent = `Find a word that connects: "${previousWords.human}" and "${previousWords.ais[0]}"`;
+      }
+
+      // Setup input
+      const input = document.getElementById('humanInput');
+      input.disabled = false;
+      input.value = '';
+      input.focus();
+
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && input.value.trim()) {
+          submitWord();
+        }
+      });
+
+      submitBtn.style.display = 'inline-block';
+      submitBtn.disabled = false;
+      nextBtn.style.display = 'none';
+    }
+
+    submitBtn.addEventListener('click', submitWord);
+    nextBtn.addEventListener('click', startNextRound);
+
+    async function submitWord() {
+      const input = document.getElementById('humanInput');
+      playerWord = input.value.trim().toLowerCase();
+
+      if (!playerWord) return;
+
+      // Check if word was already used
+      if (isWordUsed(playerWord)) {
+        input.classList.add('error');
+        instruction.innerHTML = `<span style="color: #ff6b6b;">"${playerWord}" was already used! Try a different word.</span>`;
+        input.value = '';
+        input.disabled = false;
+        input.focus();
+        setTimeout(() => input.classList.remove('error'), 500);
+        return;
+      }
+
+      input.disabled = true;
+      submitBtn.disabled = true;
+      gamePhase = 'countdown';
+
+      // Start AI word generation and countdown in parallel
+      const aiPromise = fetchAIWords();
+      await runCountdown();
+
+      // Wait for AI words if not ready yet, then reveal immediately
+      gamePhase = 'reveal';
+      await aiPromise;
+      revealAllWords();
+
+      // Check for match
+      checkForMatch();
+    }
+
+    async function runCountdown() {
+      countdown.style.display = 'block';
+
+      for (const num of ['1', '2', '3']) {
+        countdown.textContent = num;
+        countdown.style.animation = 'none';
+        countdown.offsetHeight; // Trigger reflow
+        countdown.style.animation = 'pulse 0.5s ease-in-out';
+        await sleep(700);
+      }
+
+      countdown.style.display = 'none';
+    }
+
+    async function fetchAIWords() {
+      const promises = [];
+
+      for (let i = 0; i < aiCount; i++) {
+        const promise = fetch('/api/generate-word', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            word1: previousWords.human,
+            word2: previousWords.ais[i] || previousWords.human,
+            history: history,
+            usedWords: Array.from(usedWords),
+            playerName: `AI ${i + 1}`
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error || !data.word) {
+            throw new Error(data.error || 'No word returned');
+          }
+          aiWords[i] = data.word;
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          aiWords[i] = null;
+        });
+
+        promises.push(promise);
+      }
+
+      await Promise.all(promises);
+    }
+
+    function revealAllWords() {
+      // Reveal human word
+      document.querySelector('.player-card.human .player-word').innerHTML =
+        `<span style="font-size: 1.8rem;">${playerWord}</span>`;
+
+      // Reveal AI words
+      for (let i = 0; i < aiCount; i++) {
+        const aiCard = document.getElementById(`ai-${i}`);
+        if (aiWords[i]) {
+          aiCard.querySelector('.player-word').textContent = aiWords[i];
+        } else {
+          aiCard.querySelector('.player-word').innerHTML =
+            '<span style="color: #ff6b6b;">(API error - check key)</span>';
+        }
+      }
+    }
+
+    function checkForMatch() {
+      // Filter out null/error values
+      const validAiWords = aiWords.filter(w => w !== null && w !== undefined);
+      const hasErrors = validAiWords.length < aiWords.length;
+
+      if (hasErrors || validAiWords.length === 0) {
+        // API error occurred - show retry option
+        instruction.innerHTML = '<span style="color: #ff6b6b;">API error! Make sure ANTHROPIC_API_KEY is set and restart the server.</span>';
+        submitBtn.style.display = 'none';
+        nextBtn.style.display = 'inline-block';
+        nextBtn.textContent = 'Try Again';
+        return;
+      }
+
+      // Track all words as used
+      addUsedWord(playerWord);
+      validAiWords.forEach(w => addUsedWord(w));
+
+      const allWords = [playerWord, ...validAiWords];
+      const uniqueWords = [...new Set(allWords.map(w => w.toLowerCase().trim()))];
+      const isMatch = uniqueWords.length === 1;
+
+      if (isMatch) {
+        // MIND MELD!
+        gamePhase = 'done';
+        document.querySelectorAll('.player-card').forEach(card => {
+          card.classList.add('matched');
+        });
+
+        // Add to history
+        addToHistory(true);
+
+        // Show celebration after a moment
+        setTimeout(() => {
+          showCelebration(playerWord);
+        }, 1000);
+      } else {
+        // No match, prepare for next round
+        previousWords.human = playerWord;
+        previousWords.ais = [...aiWords];
+
+        addToHistory(false);
+        nextBtn.textContent = 'Next Round';
+
+        submitBtn.style.display = 'none';
+        nextBtn.style.display = 'inline-block';
+        instruction.textContent = "Not quite! Think about what connects these words...";
+      }
+    }
+
+    function addToHistory(isMatch) {
+      const historyItem = {
+        round: round,
+        human: playerWord,
+        ais: [...aiWords],
+        isMatch: isMatch
+      };
+      history.push(historyItem);
+
+      historyPanel.style.display = 'block';
+      const historyList = document.getElementById('historyList');
+
+      const item = document.createElement('div');
+      item.className = 'history-item';
+
+      let wordsHtml = `<span class="history-word human ${isMatch ? 'match' : ''}">${playerWord}</span>`;
+      aiWords.forEach((word, i) => {
+        const displayWord = word || '(error)';
+        wordsHtml += ` <span class="arrow">+</span> <span class="history-word ai ${isMatch ? 'match' : ''}">${displayWord}</span>`;
+      });
+
+      if (isMatch) {
+        wordsHtml += ` <span class="arrow">=</span> <span class="history-word match">MIND MELD!</span>`;
+      }
+
+      item.innerHTML = `
+        <div class="history-round">${round}</div>
+        <div class="history-words">${wordsHtml}</div>
+      `;
+
+      historyList.appendChild(item);
+    }
+
+    function startNextRound() {
+      round++;
+      roundNum.textContent = round;
+      setupRound();
+    }
+
+    function showCelebration(word) {
+      matchedWordDisplay.textContent = `"${word}"`;
+      celebration.classList.add('active');
+      createConfetti();
+    }
+
+    function createConfetti() {
+      const colors = ['#e94560', '#4ecdc4', '#ff6b6b', '#44a08d', '#00ff00', '#ffcc00'];
+
+      for (let i = 0; i < 100; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + 'vw';
+          confetti.style.top = '-10px';
+          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+          confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+          celebration.appendChild(confetti);
+
+          setTimeout(() => confetti.remove(), 4000);
+        }, i * 30);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+  </script>
+</body>
+</html>
