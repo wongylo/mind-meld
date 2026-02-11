@@ -53,6 +53,49 @@
       color: #e94560;
     }
 
+    .game-explanation {
+      margin-bottom: 30px;
+      padding-bottom: 25px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .game-explanation p {
+      color: #ccc;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .game-explanation ul {
+      list-style: none;
+      margin: 15px 0;
+    }
+
+    .game-explanation li {
+      color: #bbb;
+      padding: 8px 0;
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.4;
+    }
+
+    .game-explanation li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 14px;
+      width: 8px;
+      height: 8px;
+      background: #e94560;
+      border-radius: 50%;
+    }
+
+    .game-explanation .win-text {
+      color: #4ecdc4;
+      font-size: 1.1rem;
+      margin-top: 15px;
+      margin-bottom: 0;
+    }
+
     .ai-count-selector {
       display: flex;
       gap: 10px;
@@ -410,6 +453,17 @@
   <div class="game-container">
     <!-- Setup Panel -->
     <div class="setup-panel" id="setupPanel">
+      <div class="game-explanation">
+        <h2>How to Play</h2>
+        <p>Mind Meld is a word association game where you try to think like the AI.</p>
+        <ul>
+          <li><strong>Round 1:</strong> You and the AI each pick any word independently.</li>
+          <li><strong>Next rounds:</strong> Look at both words from the previous round and think of a word that connects them.</li>
+          <li><strong>Goal:</strong> Keep playing until you and the AI say the exact same word at the same time.</li>
+        </ul>
+        <p class="win-text">When that happens, you've achieved a <strong>Mind Meld!</strong></p>
+      </div>
+
       <h2>How many AI players?</h2>
       <div class="ai-count-selector">
         <button class="ai-count-btn selected" data-count="1">1 AI</button>
