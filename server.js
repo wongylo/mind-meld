@@ -21,12 +21,24 @@ app.post("/api/generate-word", async (req, res) => {
     let prompt;
     if (!word1 && !word2) {
       // First round - generate a random starting word
-      prompt = `You are playing a word association game called Mind Meld. Generate a single random word to start the game. It should be a common noun, verb, or concept that's easy to build associations from.
+      const categories = [
+        "nature", "food", "technology", "sports", "music", "animals",
+        "places", "emotions", "weather", "household items", "hobbies",
+        "science", "art", "transportation", "clothing"
+      ];
+      const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+      const randomSeed = Math.floor(Math.random() * 10000);
+
+      prompt = `You are playing a word association game called Mind Meld. Generate a single random word to start the game.
+
+For variety, lean towards something related to: ${randomCategory} (but not required).
+Random seed for uniqueness: ${randomSeed}
 
 Rules:
 - Respond with ONLY the single word, nothing else
 - No punctuation, no explanation
-- Make it interesting but not obscure`;
+- Make it interesting but not obscure
+- Pick something DIFFERENT from common starting words like "ocean", "music", "love"`;
     } else {
       // Subsequent rounds - find a word that connects the two
       const historyContext =
@@ -63,6 +75,7 @@ Rules:
       const message = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 50,
+        temperature: 1,
         messages: [{ role: "user", content: prompt }],
       });
 
